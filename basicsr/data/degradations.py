@@ -3,6 +3,7 @@ import math
 import numpy as np
 import random
 import torch
+import torch.nn as nn
 from scipy import special
 from scipy.stats import multivariate_normal
 from torchvision.transforms.functional_tensor import rgb_to_grayscale
