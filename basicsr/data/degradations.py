@@ -383,6 +383,219 @@ def random_mixed_kernels(kernel_list,
     return kernel
 
 
+# start: random degradation info (DASR)
+def random_bivariate_Gaussian_info(kernel_size,
+                                   sigma_x_range,
+                                   sigma_y_range,
+                                   rotation_range,
+                                   noise_range=None,
+                                   isotropic=True):
+    """Randomly generate bivariate isotropic or anisotropic Gaussian kernels.
+
+    In the isotropic mode, only `sigma_x_range` is used. `sigma_y_range` and `rotation_range` is ignored.
+
+    Args:
+        kernel_size (int):
+        sigma_x_range (tuple): [0.6, 5]
+        sigma_y_range (tuple): [0.6, 5]
+        rotation range (tuple): [-math.pi, math.pi]
+        noise_range(tuple, optional): multiplicative kernel noise,
+            [0.75, 1.25]. Default: None
+
+    Returns:
+        kernel (ndarray):
+    """
+    assert kernel_size % 2 == 1, 'Kernel size must be an odd number.'
+    assert sigma_x_range[0] < sigma_x_range[1], 'Wrong sigma_x_range.'
+    sigma_x = np.random.uniform(sigma_x_range[0], sigma_x_range[1])
+    if isotropic is False:
+        assert sigma_y_range[0] < sigma_y_range[1], 'Wrong sigma_y_range.'
+        assert rotation_range[0] < rotation_range[1], 'Wrong rotation_range.'
+        sigma_y = np.random.uniform(sigma_y_range[0], sigma_y_range[1])
+        rotation = np.random.uniform(rotation_range[0], rotation_range[1])
+    else:
+        sigma_y = sigma_x
+        rotation = 0
+
+    kernel = bivariate_Gaussian(kernel_size, sigma_x, sigma_y, rotation, isotropic=isotropic)
+
+    # add multiplicative noise
+    if noise_range is not None:
+        assert noise_range[0] < noise_range[1], 'Wrong noise range.'
+        noise = np.random.uniform(noise_range[0], noise_range[1], size=kernel.shape)
+        kernel = kernel * noise
+    kernel = kernel / np.sum(kernel)
+    return {'kernel': kernel, 'kernel_size': kernel_size, 'sigma_x': sigma_x, 'sigma_y': sigma_y, 'rotation': rotation}
+
+
+def random_bivariate_generalized_Gaussian_info(kernel_size,
+                                               sigma_x_range,
+                                               sigma_y_range,
+                                               rotation_range,
+                                               beta_range,
+                                               noise_range=None,
+                                               isotropic=True):
+    """Randomly generate bivariate generalized Gaussian kernels.
+
+    In the isotropic mode, only `sigma_x_range` is used. `sigma_y_range` and `rotation_range` is ignored.
+
+    Args:
+        kernel_size (int):
+        sigma_x_range (tuple): [0.6, 5]
+        sigma_y_range (tuple): [0.6, 5]
+        rotation range (tuple): [-math.pi, math.pi]
+        beta_range (tuple): [0.5, 8]
+        noise_range(tuple, optional): multiplicative kernel noise,
+            [0.75, 1.25]. Default: None
+
+    Returns:
+        kernel (ndarray):
+    """
+    assert kernel_size % 2 == 1, 'Kernel size must be an odd number.'
+    assert sigma_x_range[0] < sigma_x_range[1], 'Wrong sigma_x_range.'
+    sigma_x = np.random.uniform(sigma_x_range[0], sigma_x_range[1])
+    if isotropic is False:
+        assert sigma_y_range[0] < sigma_y_range[1], 'Wrong sigma_y_range.'
+        assert rotation_range[0] < rotation_range[1], 'Wrong rotation_range.'
+        sigma_y = np.random.uniform(sigma_y_range[0], sigma_y_range[1])
+        rotation = np.random.uniform(rotation_range[0], rotation_range[1])
+    else:
+        sigma_y = sigma_x
+        rotation = 0
+
+    # assume beta_range[0] < 1 < beta_range[1]
+    if np.random.uniform() < 0.5:
+        beta = np.random.uniform(beta_range[0], 1)
+    else:
+        beta = np.random.uniform(1, beta_range[1])
+
+    kernel = bivariate_generalized_Gaussian(kernel_size, sigma_x, sigma_y, rotation, beta, isotropic=isotropic)
+
+    # add multiplicative noise
+    if noise_range is not None:
+        assert noise_range[0] < noise_range[1], 'Wrong noise range.'
+        noise = np.random.uniform(noise_range[0], noise_range[1], size=kernel.shape)
+        kernel = kernel * noise
+    kernel = kernel / np.sum(kernel)
+    return {'kernel': kernel, 'kernel_size': kernel_size, 'sigma_x': sigma_x, 'sigma_y': sigma_y, 'rotation': rotation}
+
+
+def random_bivariate_plateau_info(kernel_size,
+                                  sigma_x_range,
+                                  sigma_y_range,
+                                  rotation_range,
+                                  beta_range,
+                                  noise_range=None,
+                                  isotropic=True):
+    """Randomly generate bivariate plateau kernels.
+
+    In the isotropic mode, only `sigma_x_range` is used. `sigma_y_range` and `rotation_range` is ignored.
+
+    Args:
+        kernel_size (int):
+        sigma_x_range (tuple): [0.6, 5]
+        sigma_y_range (tuple): [0.6, 5]
+        rotation range (tuple): [-math.pi/2, math.pi/2]
+        beta_range (tuple): [1, 4]
+        noise_range(tuple, optional): multiplicative kernel noise,
+            [0.75, 1.25]. Default: None
+
+    Returns:
+        kernel (ndarray):
+    """
+    assert kernel_size % 2 == 1, 'Kernel size must be an odd number.'
+    assert sigma_x_range[0] < sigma_x_range[1], 'Wrong sigma_x_range.'
+    sigma_x = np.random.uniform(sigma_x_range[0], sigma_x_range[1])
+    if isotropic is False:
+        assert sigma_y_range[0] < sigma_y_range[1], 'Wrong sigma_y_range.'
+        assert rotation_range[0] < rotation_range[1], 'Wrong rotation_range.'
+        sigma_y = np.random.uniform(sigma_y_range[0], sigma_y_range[1])
+        rotation = np.random.uniform(rotation_range[0], rotation_range[1])
+    else:
+        sigma_y = sigma_x
+        rotation = 0
+
+    # TODO: this may be not proper
+    if np.random.uniform() < 0.5:
+        beta = np.random.uniform(beta_range[0], 1)
+    else:
+        beta = np.random.uniform(1, beta_range[1])
+
+    kernel = bivariate_plateau(kernel_size, sigma_x, sigma_y, rotation, beta, isotropic=isotropic)
+    # add multiplicative noise
+    if noise_range is not None:
+        assert noise_range[0] < noise_range[1], 'Wrong noise range.'
+        noise = np.random.uniform(noise_range[0], noise_range[1], size=kernel.shape)
+        kernel = kernel * noise
+    kernel = kernel / np.sum(kernel)
+
+    return {'kernel': kernel, 'kernel_size': kernel_size, 'sigma_x': sigma_x, 'sigma_y': sigma_y, 'rotation': rotation}
+
+
+def random_mixed_kernels_info(kernel_list,
+                              kernel_prob,
+                              kernel_size=21,
+                              sigma_x_range=(0.6, 5),
+                              sigma_y_range=(0.6, 5),
+                              rotation_range=(-math.pi, math.pi),
+                              betag_range=(0.5, 8),
+                              betap_range=(0.5, 8),
+                              noise_range=None):
+    """Randomly generate mixed kernels.
+
+    Args:
+        kernel_list (tuple): a list name of kernel types,
+            support ['iso', 'aniso', 'skew', 'generalized', 'plateau_iso',
+            'plateau_aniso']
+        kernel_prob (tuple): corresponding kernel probability for each
+            kernel type
+        kernel_size (int):
+        sigma_x_range (tuple): [0.6, 5]
+        sigma_y_range (tuple): [0.6, 5]
+        rotation range (tuple): [-math.pi, math.pi]
+        beta_range (tuple): [0.5, 8]
+        noise_range(tuple, optional): multiplicative kernel noise,
+            [0.75, 1.25]. Default: None
+
+    Returns:
+        kernel (ndarray):
+    """
+    kernel_type = random.choices(kernel_list, kernel_prob)[0]
+    if kernel_type == 'iso':
+        kernel_info = random_bivariate_Gaussian_info(
+            kernel_size, sigma_x_range, sigma_y_range, rotation_range, noise_range=noise_range, isotropic=True)
+    elif kernel_type == 'aniso':
+        kernel_info = random_bivariate_Gaussian_info(
+            kernel_size, sigma_x_range, sigma_y_range, rotation_range, noise_range=noise_range, isotropic=False)
+    elif kernel_type == 'generalized_iso':
+        kernel_info = random_bivariate_generalized_Gaussian_info(
+            kernel_size,
+            sigma_x_range,
+            sigma_y_range,
+            rotation_range,
+            betag_range,
+            noise_range=noise_range,
+            isotropic=True)
+    elif kernel_type == 'generalized_aniso':
+        kernel_info = random_bivariate_generalized_Gaussian_info(
+            kernel_size,
+            sigma_x_range,
+            sigma_y_range,
+            rotation_range,
+            betag_range,
+            noise_range=noise_range,
+            isotropic=False)
+    elif kernel_type == 'plateau_iso':
+        kernel_info = random_bivariate_plateau_info(
+            kernel_size, sigma_x_range, sigma_y_range, rotation_range, betap_range, noise_range=None, isotropic=True)
+    elif kernel_type == 'plateau_aniso':
+        kernel_info = random_bivariate_plateau_info(
+            kernel_size, sigma_x_range, sigma_y_range, rotation_range, betap_range, noise_range=None, isotropic=False)
+    return kernel_info
+
+
+# end: random degradation info (DASR)
+
 np.seterr(divide='ignore', invalid='ignore')
 
 
