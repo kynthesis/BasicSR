@@ -966,7 +966,30 @@ def random_generate_poisson_noise_pt(img, scale_range=(0, 1.0), gray_prob=0):
     return generate_poisson_noise_pt(img, scale, gray_noise)
 
 
+def random_generate_poisson_noise_pt_info(img, scale_range=(0, 1.0), gray_prob=0):
+    scale = torch.rand(
+        img.size(0), dtype=img.dtype, device=img.device) * (scale_range[1] - scale_range[0]) + scale_range[0]
+    gray_noise = torch.rand(img.size(0), dtype=img.dtype, device=img.device)
+    gray_noise = (gray_noise < gray_prob).float()
+    # return generate_poisson_noise_pt(img, scale, gray_noise)
+    return scale, gray_noise, generate_poisson_noise_pt(img, scale, gray_noise)  # DASR
+
+
 def random_add_poisson_noise_pt(img, scale_range=(0, 1.0), gray_prob=0, clip=True, rounds=False):
+    # noise = random_generate_poisson_noise_pt(img, scale_range, gray_prob)
+    scale, gray_noise, noise = random_generate_poisson_noise_pt_info(img, scale_range, gray_prob)  # DASR
+    out = img + noise
+    if clip and rounds:
+        out = torch.clamp((out * 255.0).round(), 0, 255) / 255.
+    elif clip:
+        out = torch.clamp(out, 0, 1)
+    elif rounds:
+        out = (out * 255.0).round() / 255.
+    # return out
+    return scale, gray_noise, out, noise  # DASR
+
+
+def random_add_poisson_noise_pt_info(img, scale_range=(0, 1.0), gray_prob=0, clip=True, rounds=False):
     noise = random_generate_poisson_noise_pt(img, scale_range, gray_prob)
     out = img + noise
     if clip and rounds:
