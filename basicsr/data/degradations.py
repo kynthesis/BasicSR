@@ -766,6 +766,24 @@ def random_add_gaussian_noise_pt(img, sigma_range=(0, 1.0), gray_prob=0, clip=Tr
     return out
 
 
+def only_generate_gaussian_noise_pt(img, sigma_range=(0, 1.0), gray_prob=0):
+    _, _, noise = random_generate_gaussian_noise_pt(img, sigma_range, gray_prob)
+    return noise
+
+
+def add_given_gaussian_noise_pt(img, noise, clip=True, rounds=False):
+    if noise.size != img.size:
+        noise = nn.functional.interpolate(noise, size=(img.shape[2], img.shape[3]))
+    out = img + noise
+    if clip and rounds:
+        out = torch.clamp((out * 255.0).round(), 0, 255) / 255.
+    elif clip:
+        out = torch.clamp(out, 0, 1)
+    elif rounds:
+        out = (out * 255.0).round() / 255.
+    return out
+
+
 # ----------------------- Poisson (Shot) Noise ----------------------- #
 
 
