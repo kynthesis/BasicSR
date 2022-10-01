@@ -751,11 +751,13 @@ def random_generate_gaussian_noise_pt(img, sigma_range=(0, 10), gray_prob=0):
         img.size(0), dtype=img.dtype, device=img.device) * (sigma_range[1] - sigma_range[0]) + sigma_range[0]
     gray_noise = torch.rand(img.size(0), dtype=img.dtype, device=img.device)
     gray_noise = (gray_noise < gray_prob).float()
-    return generate_gaussian_noise_pt(img, sigma, gray_noise)
+    # return generate_gaussian_noise_pt(img, sigma, gray_noise)
+    return sigma, gray_noise, generate_gaussian_noise_pt(img, sigma, gray_noise)  # DASR
 
 
 def random_add_gaussian_noise_pt(img, sigma_range=(0, 1.0), gray_prob=0, clip=True, rounds=False):
-    noise = random_generate_gaussian_noise_pt(img, sigma_range, gray_prob)
+    # noise = random_generate_gaussian_noise_pt(img, sigma_range, gray_prob)
+    sigma, gray_noise, noise = random_generate_gaussian_noise_pt(img, sigma_range, gray_prob)  # DASR
     out = img + noise
     if clip and rounds:
         out = torch.clamp((out * 255.0).round(), 0, 255) / 255.
@@ -763,7 +765,8 @@ def random_add_gaussian_noise_pt(img, sigma_range=(0, 1.0), gray_prob=0, clip=Tr
         out = torch.clamp(out, 0, 1)
     elif rounds:
         out = (out * 255.0).round() / 255.
-    return out
+    # return out
+    return sigma, gray_noise, out, noise  # DASR
 
 
 def only_generate_gaussian_noise_pt(img, sigma_range=(0, 1.0), gray_prob=0):
