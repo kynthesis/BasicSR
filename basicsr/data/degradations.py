@@ -753,6 +753,15 @@ def random_generate_gaussian_noise_pt(img, sigma_range=(0, 10), gray_prob=0):
     return generate_gaussian_noise_pt(img, sigma, gray_noise)
 
 
+def random_generate_gaussian_noise_pt_info(img, sigma_range=(0, 10), gray_prob=0):
+    sigma = torch.rand(
+        img.size(0), dtype=img.dtype, device=img.device) * (sigma_range[1] - sigma_range[0]) + sigma_range[0]
+    gray_noise = torch.rand(img.size(0), dtype=img.dtype, device=img.device)
+    gray_noise = (gray_noise < gray_prob).float()
+    # return generate_gaussian_noise_pt(img, sigma, gray_noise)
+    return sigma, gray_noise, generate_gaussian_noise_pt(img, sigma, gray_noise)  # DASR
+
+
 def random_add_gaussian_noise_pt(img, sigma_range=(0, 1.0), gray_prob=0, clip=True, rounds=False):
     noise = random_generate_gaussian_noise_pt(img, sigma_range, gray_prob)
     out = img + noise
@@ -939,6 +948,15 @@ def random_generate_poisson_noise_pt(img, scale_range=(0, 1.0), gray_prob=0):
     gray_noise = torch.rand(img.size(0), dtype=img.dtype, device=img.device)
     gray_noise = (gray_noise < gray_prob).float()
     return generate_poisson_noise_pt(img, scale, gray_noise)
+
+
+def random_generate_poisson_noise_pt_info(img, scale_range=(0, 1.0), gray_prob=0):
+    scale = torch.rand(
+        img.size(0), dtype=img.dtype, device=img.device) * (scale_range[1] - scale_range[0]) + scale_range[0]
+    gray_noise = torch.rand(img.size(0), dtype=img.dtype, device=img.device)
+    gray_noise = (gray_noise < gray_prob).float()
+    # return generate_poisson_noise_pt(img, scale, gray_noise)
+    return scale, gray_noise, generate_poisson_noise_pt(img, scale, gray_noise)  # DASR
 
 
 def random_add_poisson_noise_pt(img, scale_range=(0, 1.0), gray_prob=0, clip=True, rounds=False):
